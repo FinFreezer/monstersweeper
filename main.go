@@ -15,7 +15,6 @@ type Game struct{
 	field 	         *d.Field
 	input 	         *d.Input
 	first_click      bool
-	has_changed      bool
 }
 
 func (g *Game) Update() error {
@@ -34,23 +33,20 @@ func (g *Game) Update() error {
 	}
 
 	g.input.Update()
+	if g.input.IsActive(){
+		g.field.FindClickedTile(g.input.ReturnPos())
+	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	squareClr := color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
 
-	if g.has_changed == true {
-		if len(g.field.Tiles) != 0 {
-			for _, t := range(g.field.Tiles) {
-				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, squareClr, false)
-			}
+	if len(g.field.Tiles) != 0 {
+		for _, t := range(g.field.Tiles) {
+			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, squareClr, false)
 		}
-		g.has_changed = false
 	}
-	/*if ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Mouse pressed."), 585, 20)
-	}*/
 	g.input.Draw(screen)
 	x, y := g.input.ReturnPos()
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %.0f", ebiten.ActualFPS()))
