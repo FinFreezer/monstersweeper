@@ -1,20 +1,19 @@
 package main
 
-import 
-(
+import (
+	"fmt"
 	"log"
+
+	d "github.com/finfreezer/monstersweeper/monstersweeper"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-	"fmt"
-	"image/color"
-	d "github.com/finfreezer/monstersweeper/monstersweeper"
 )
 
-type Game struct{
-	field 	         *d.Field
-	input 	         *d.Input
-	first_click      bool
+type Game struct {
+	field       *d.Field
+	input       *d.Input
+	first_click bool
 }
 
 func (g *Game) Update() error {
@@ -33,18 +32,34 @@ func (g *Game) Update() error {
 	}
 
 	g.input.Update()
-	if g.input.IsActive(){
+	if g.input.IsActive() {
 		g.field.FindClickedTile(g.input.ReturnPos())
 	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	squareClr := color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
 
 	if len(g.field.Tiles) != 0 {
-		for _, t := range(g.field.Tiles) {
-			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, squareClr, false)
+		for _, t := range g.field.Tiles {
+			if t.IsRevealed && t.IsMine {
+				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrMineRevealed, false)
+				op := &ebiten.DrawImageOptions{}
+				rect := d.MineImg.Bounds()
+				width := rect.Dx()
+				heigth := rect.Dy()
+				scaleX := float64((float64(d.TILE_SIZE_X) / float64(width))) * 0.8
+				scaleY := float64((float64(d.TILE_SIZE_Y) / float64(heigth))) * 0.8
+				op.GeoM.Scale(scaleX, scaleY)
+				op.GeoM.Translate(float64(t.OriginX+(t.Width/10)), float64(t.OriginY+(t.Height/10)))
+				screen.DrawImage(d.MineImg, op)
+				continue
+			}
+			if t.IsRevealed {
+				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrRevealed, false)
+				continue
+			}
+			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrInit, false)
 		}
 	}
 	g.input.Draw(screen)

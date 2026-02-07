@@ -4,6 +4,7 @@ import
 (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"fmt"
 )
 
@@ -31,7 +32,7 @@ func (i *Input) IsActive() (bool) {
 }
 
 func (i *Input) Update() {
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		i.mousePosX, i.mousePosY = ebiten.CursorPosition()
 		i.mouseActive = true
 	} else {
