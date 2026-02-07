@@ -1,9 +1,11 @@
 package monstersweeper
 
 import (
+	"bytes"
 	_ "embed"
 	"image"
 	"image/color"
+	"io"
 	"log"
 	"os"
 
@@ -16,7 +18,8 @@ var (
 	TileClrRevealed     = color.RGBA{0xff, 0xff, 0xff, 0xff}
 	TileClrMineRevealed = color.RGBA{0xC8, 0x28, 0x28, 0xff}
 	MineImg             = loadImages()
-	MineText            = initFont(24)
+	MineText            = initFont(TILE_SIZE_Y * 0.8)
+	FirstClick          = true
 )
 
 type TextType struct {
@@ -53,5 +56,38 @@ func loadImages() *ebiten.Image {
 }
 
 func initFont(size float64) *TextType {
-	return &TextType{}
+	faceSource, err := text.NewGoTextFaceSource(bytes.NewReader(readFileToBytes()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &TextType{
+		faceSource,
+		size,
+	}
+}
+
+func readFileToBytes() []byte {
+	file, err := os.Open("./resources/fonts/FantasyMagist.otf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	size := info.Size()
+	if size <= 0 {
+		log.Fatal(err)
+	}
+
+	data := make([]byte, size)
+	_, err = io.ReadFull(file, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return data
 }

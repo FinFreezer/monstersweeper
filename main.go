@@ -2,18 +2,21 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"log"
+
+	"strconv"
 
 	d "github.com/finfreezer/monstersweeper/monstersweeper"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
-	field       *d.Field
-	input       *d.Input
-	first_click bool
+	field *d.Field
+	input *d.Input
 }
 
 func (g *Game) Update() error {
@@ -57,11 +60,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			if t.IsRevealed {
 				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrRevealed, false)
+
+				if t.AdjacentMines > 0 {
+					mineAmt := strconv.Itoa(t.AdjacentMines)
+					op := &text.DrawOptions{}
+					f := &text.GoTextFace{
+						Source: d.MineText.Source,
+						Size:   d.MineText.Size,
+					}
+					x, y := text.Measure(mineAmt, f, 0)
+					op.GeoM.Translate(float64(t.OriginX+((t.Width-float32(x))/2)), float64(t.OriginY+(t.Height-float32(y))))
+					op.ColorScale.ScaleWithColor(color.RGBA{0x00, 0x80, 0x00, 0xff})
+
+					text.Draw(screen, mineAmt, f, op)
+				}
 				continue
 			}
 			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrInit, false)
+
 		}
+
 	}
+
 	g.input.Draw(screen)
 	x, y := g.input.ReturnPos()
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %.0f", ebiten.ActualFPS()))
