@@ -5,13 +5,14 @@ import (
 	"math"
 	"math/rand"
 
-	//"time"
 	"fmt"
+	"time"
 )
 
 type Field struct {
-	Tiles []*Tile
-	Grid  map[int]map[int]*Tile
+	Tiles     []*Tile
+	Grid      map[int]map[int]*Tile
+	MineTiles []*Tile
 }
 
 func (f *Field) calcTilePos() {
@@ -58,9 +59,9 @@ func InitField() (*Field, error) {
 }
 
 func (f *Field) addMines() {
-	//seedProd := time.Now().UnixNano()
-	var seedDebug int64 = 1234
-	r := rand.New(rand.NewSource(seedDebug))
+	seedProd := time.Now().UnixNano()
+	//var seedDebug int64 = 1234
+	r := rand.New(rand.NewSource(seedProd))
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
 
@@ -94,6 +95,7 @@ func (f *Field) addMines() {
 	for _, mine := range mines {
 		mineTile := f.Grid[int(mine.posX)][int(mine.posY)]
 		mineTile.IsMine = true
+		f.MineTiles = append(f.MineTiles, mineTile)
 		f.includeMines(mineTile)
 	}
 	return
@@ -105,12 +107,12 @@ func (f *Field) FindClickedTile(coord_x, coord_y int) (tile *Tile) {
 			if coord_y >= int(tile.OriginY) && coord_y <= int(tile.OriginY)+int(tile.Height) {
 				fmt.Printf("Tile found at grid: %0.1f, %0.1f\n", tile.GridX, tile.GridY)
 				if tile.IsMine {
-					/*if FirstClick {
+					if FirstClick {
 						f.handleFirstClickMine(tile)
 						FirstClick = false
 						fmt.Println("First click mine!")
 						return tile
-					}*/
+					}
 					tile.IsRevealed = true
 					fmt.Println("Oops, you've hit a mine.")
 					return tile
@@ -136,19 +138,28 @@ func (f *Field) handleFirstClickMine(t *Tile) {
 
 	coordX := int(t.GridX)
 	coordY := int(t.GridY)
-
 	for _, dir := range directions {
 		next := f.Grid[coordX+dir.stepX][coordY+dir.stepY]
+
 		if next != nil && !next.IsMine {
 			next.IsMine = true
+
+			for i, tile := range f.MineTiles { //Replace the old tile.
+				if tile.IsMine == false {
+					f.MineTiles[i] = next
+					break
+				}
+			}
 			break
 		}
 	}
-	t.IsRevealed = true
 	for _, tile := range f.Tiles {
 		tile.AdjacentMines = 0
-		f.includeMines(tile)
 	}
+	for _, mine := range f.MineTiles {
+		f.includeMines(mine)
+	}
+	t.IsRevealed = true
 	return
 }
 
