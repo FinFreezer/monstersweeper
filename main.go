@@ -130,7 +130,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		Size:   d.GeneralText.Size,
 	}
 	//x, y := text.Measure("Game Over", f, 0)
-	edgeTile := g.field.Tiles[7]
+	edgeTile := g.field.Tiles[d.FieldSize-1]
 	edge := edgeTile.OriginX + edgeTile.Width + d.EDGE_MARGIN
 	op.GeoM.Translate(float64(edge), float64(d.EDGE_MARGIN))
 	op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})

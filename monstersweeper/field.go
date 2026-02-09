@@ -31,8 +31,8 @@ func (f *Field) calcTilePos() {
 	tiles := []*Tile{}
 	var coord_x float32 = 0.0 + EDGE_MARGIN/2
 	var coord_y float32 = 0.0 + EDGE_MARGIN/2
-	for j := 0; j < 8; j++ {
-		for i := 0; i < 8; i++ {
+	for j := 0; j < FieldSize; j++ {
+		for i := 0; i < FieldSize; i++ {
 			t := &Tile{
 				OriginX:       coord_x,
 				OriginY:       coord_y,
@@ -76,8 +76,11 @@ func (f *Field) addMines() {
 	r := rand.New(rand.NewSource(seedProd))
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
-
-	for i := 0; i < int(math.Round(64*0.15)); i++ { // Mine density
+	ratio := 0.15
+	if FieldSize >= 16 {
+		ratio = 0.20
+	}
+	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ { // Mine density
 		randomX := r.Intn(8) + 1
 		randomY := r.Intn(8) + 1
 
@@ -87,8 +90,8 @@ func (f *Field) addMines() {
 
 		for {
 			if minesPos[randomX][randomY] {
-				randomX = r.Intn(8) + 1
-				randomY = r.Intn(8) + 1
+				randomX = r.Intn(FieldSize) + 1
+				randomY = r.Intn(FieldSize) + 1
 				continue
 
 			} else {

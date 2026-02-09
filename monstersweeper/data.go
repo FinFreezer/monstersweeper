@@ -16,6 +16,7 @@ import (
 )
 
 var (
+	FieldSize           = 12
 	Images              = loadImages()
 	TileClrInit         = color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
 	TileClrInitDark     = color.RGBA{0x72, 0x78, 0xA8, 0xff}
@@ -23,10 +24,12 @@ var (
 	TileClrRevealed     = color.RGBA{0xff, 0xff, 0xff, 0xff}
 	TileClrMineRevealed = color.RGBA{0xC8, 0x28, 0x28, 0xff}
 	MineImg             = Images["mine.png"]
-	MineText            = initFont(TILE_SIZE_Y * 0.8)
+	MineText            = initFont(float64(TILE_SIZE_Y) * 0.8)
 	FirstClick          = true
 	FlagImg             = Images["flag.png"]
 	GeneralText         = initFont(32)
+	TILE_SIZE_Y         = float32((GAME_AREA_HEIGHT - ((FieldSize - 1) * TILE_MARGIN)) / FieldSize)
+	TILE_SIZE_X         = TILE_SIZE_Y
 )
 
 type TextType struct {
@@ -41,9 +44,6 @@ const (
 	TILE_MARGIN      = 5
 	GAME_AREA_WIDTH  = SCREENWIDTH - 2*EDGE_MARGIN
 	GAME_AREA_HEIGHT = SCREENHEIGHT - 2*EDGE_MARGIN
-	//TILE_SIZE_X = (GAME_AREA_WIDTH - 6 * TILE_MARGIN / 2) / 8
-	TILE_SIZE_Y = (GAME_AREA_HEIGHT - 6*TILE_MARGIN/2) / 8
-	TILE_SIZE_X = TILE_SIZE_Y
 )
 
 func loadImages() map[string]*ebiten.Image {
@@ -92,7 +92,7 @@ func initFont(size float64) *TextType {
 }
 
 func readFileToBytes() []byte {
-	file, err := os.Open("./resources/fonts/FantasyMagist.otf")
+	file, err := os.Open("resources/fonts/FantasyMagist.otf")
 	if err != nil {
 		log.Fatal(err)
 	}
