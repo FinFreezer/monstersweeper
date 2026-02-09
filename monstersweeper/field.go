@@ -101,30 +101,45 @@ func (f *Field) addMines() {
 	return
 }
 
-func (f *Field) FindClickedTile(coord_x, coord_y int) (tile *Tile) {
+func (f *Field) FindClickedTile(coord_x, coord_y int, rightClick bool) (tile *Tile) {
 	for _, tile := range f.Tiles {
 		if coord_x >= int(tile.OriginX) && coord_x <= int(tile.OriginX)+int(tile.Width) {
 			if coord_y >= int(tile.OriginY) && coord_y <= int(tile.OriginY)+int(tile.Height) {
 				fmt.Printf("Tile found at grid: %0.1f, %0.1f\n", tile.GridX, tile.GridY)
-				if tile.IsMine {
-					if FirstClick {
-						f.handleFirstClickMine(tile)
-						FirstClick = false
-						fmt.Println("First click mine!")
+				if !rightClick {
+					f.tileClicked(tile)
+					return tile
+
+				} else {
+					if !tile.IsFlagged {
+						tile.IsFlagged = true
+						return tile
+					} else {
+						tile.IsFlagged = false
 						return tile
 					}
-					tile.IsRevealed = true
-					fmt.Println("Oops, you've hit a mine.")
-					return tile
 				}
-				FirstClick = false
-				f.revealTiles(tile)
-				fmt.Println(tile.AdjacentMines)
-				return tile
 			}
 		}
 	}
 	return nil
+}
+
+func (f *Field) tileClicked(t *Tile) {
+	if t.IsMine {
+		if FirstClick {
+			f.handleFirstClickMine(t)
+			FirstClick = false
+			fmt.Println("First click mine!")
+			return
+		}
+		t.IsRevealed = true
+		fmt.Println("Oops, you've hit a mine.")
+		return
+	}
+	FirstClick = false
+	f.revealTiles(t)
+	return
 }
 
 func (f *Field) handleFirstClickMine(t *Tile) {

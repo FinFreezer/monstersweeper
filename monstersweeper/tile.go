@@ -16,6 +16,7 @@ type Tile struct {
 	IsMine        bool
 	IsRevealed    bool
 	AdjacentMines int
+	IsFlagged     bool
 }
 
 type Mine struct {
