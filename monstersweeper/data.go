@@ -26,6 +26,7 @@ var (
 	MineText            = initFont(TILE_SIZE_Y * 0.8)
 	FirstClick          = true
 	FlagImg             = Images["flag.png"]
+	GeneralText         = initFont(32)
 )
 
 type TextType struct {
@@ -41,8 +42,8 @@ const (
 	GAME_AREA_WIDTH  = SCREENWIDTH - 2*EDGE_MARGIN
 	GAME_AREA_HEIGHT = SCREENHEIGHT - 2*EDGE_MARGIN
 	//TILE_SIZE_X = (GAME_AREA_WIDTH - 6 * TILE_MARGIN / 2) / 8
-	TILE_SIZE_X = TILE_SIZE_Y
 	TILE_SIZE_Y = (GAME_AREA_HEIGHT - 6*TILE_MARGIN/2) / 8
+	TILE_SIZE_X = TILE_SIZE_Y
 )
 
 func loadImages() map[string]*ebiten.Image {

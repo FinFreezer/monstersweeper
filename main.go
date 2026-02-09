@@ -15,12 +15,15 @@ import (
 )
 
 type Game struct {
-	field *d.Field
-	input *d.Input
+	field    *d.Field
+	input    *d.Input
+	GameOver bool
 }
 
 func (g *Game) Update() error {
-
+	if g.GameOver {
+		return nil
+	}
 	if g.field == nil {
 		f, err := d.InitField()
 		g.field = f
@@ -40,6 +43,7 @@ func (g *Game) Update() error {
 		g.field.FindClickedTile(posX, posY, g.input.WasRightClick())
 		g.input.ClearRightClick()
 	}
+	g.GameOver = g.checkGameOver()
 	return nil
 }
 
@@ -105,12 +109,46 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	x, y := g.input.ReturnPos()
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %.0f", ebiten.ActualFPS()))
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d, %d", x, y), 600, 0)
+
+	if g.GameOver {
+		vector.FillRect(screen, 0, 0, d.SCREENWIDTH, d.SCREENHEIGHT, color.RGBA{50, 50, 50, 200}, false)
+		op := &text.DrawOptions{}
+		f := &text.GoTextFace{
+			Source: d.MineText.Source,
+			Size:   d.MineText.Size,
+		}
+		//x, y := text.Measure("Game Over", f, 0)
+		op.GeoM.Translate(float64(d.TILE_SIZE_Y*3), float64(d.TILE_SIZE_Y*4))
+		op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
+
+		text.Draw(screen, "Game Over", f, op)
+	}
+
+	op := &text.DrawOptions{}
+	f := &text.GoTextFace{
+		Source: d.GeneralText.Source,
+		Size:   d.GeneralText.Size,
+	}
+	//x, y := text.Measure("Game Over", f, 0)
+	edgeTile := g.field.Tiles[7]
+	edge := edgeTile.OriginX + edgeTile.Width + d.EDGE_MARGIN
+	op.GeoM.Translate(float64(edge), float64(d.EDGE_MARGIN))
+	op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
+	total, left := g.field.ReturnMineAmt()
+	mineText := fmt.Sprintf("Mines left %d / %d", left, total)
+	text.Draw(screen, mineText, f, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return d.SCREENWIDTH, d.SCREENHEIGHT
 }
 
+func (g *Game) checkGameOver() bool {
+	if len(g.field.RevealedTiles) == (len(g.field.Tiles) - len(g.field.MineTiles)) {
+		return true
+	}
+	return false
+}
 func (g *Game) drawShaders(screen *ebiten.Image, t *d.Tile) {
 	vector.FillRect(screen, (t.OriginX + t.Width - 10), t.OriginY, 10, t.Height, d.TileClrInitDark, false)
 	vector.FillRect(screen, t.OriginX, t.OriginY+t.Height-10, t.Width-10, 10, d.TileClrInitDark, false)
@@ -122,6 +160,7 @@ func (g *Game) drawCorners(screen *ebiten.Image, t *d.Tile) {
 	g.drawTopCorner(screen, t.OriginX+t.Width, t.OriginY)
 	g.drawBottomCorner(screen, t.OriginX+t.Width, t.OriginY)
 }
+
 func (g *Game) drawTopCorner(screen *ebiten.Image, beginX, beginY float32) {
 	drawOp := &vector.DrawPathOptions{}
 	drawOp.ColorScale.ScaleWithColor(d.TileClrInitDark)

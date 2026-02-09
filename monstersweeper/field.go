@@ -10,9 +10,21 @@ import (
 )
 
 type Field struct {
-	Tiles     []*Tile
-	Grid      map[int]map[int]*Tile
-	MineTiles []*Tile
+	Tiles         []*Tile
+	Grid          map[int]map[int]*Tile
+	MineTiles     []*Tile
+	RevealedTiles []*Tile
+	Flags         int
+}
+
+func (f *Field) ReturnMineAmt() (total, left int) {
+	revealed := 0
+	for _, mine := range f.MineTiles {
+		if mine.IsRevealed {
+			revealed += 1
+		}
+	}
+	return len(f.MineTiles), len(f.MineTiles) - revealed - f.Flags
 }
 
 func (f *Field) calcTilePos() {
@@ -65,7 +77,7 @@ func (f *Field) addMines() {
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
 
-	for i := 0; i < int(math.Round(64*0.15)); i++ {
+	for i := 0; i < int(math.Round(64*0.15)); i++ { // Mine density
 		randomX := r.Intn(8) + 1
 		randomY := r.Intn(8) + 1
 
@@ -113,9 +125,11 @@ func (f *Field) FindClickedTile(coord_x, coord_y int, rightClick bool) (tile *Ti
 				} else {
 					if !tile.IsFlagged {
 						tile.IsFlagged = true
+						f.Flags += 1
 						return tile
 					} else {
 						tile.IsFlagged = false
+						f.Flags -= 1
 						return tile
 					}
 				}
@@ -174,6 +188,7 @@ func (f *Field) handleFirstClickMine(t *Tile) {
 	for _, mine := range f.MineTiles {
 		f.includeMines(mine)
 	}
+	f.RevealedTiles = append(f.RevealedTiles, t)
 	t.IsRevealed = true
 	return
 }
@@ -191,8 +206,10 @@ func (f *Field) revealTiles(t *Tile) {
 	}
 	if t.AdjacentMines != 0 {
 		t.IsRevealed = true
+		f.RevealedTiles = append(f.RevealedTiles, t)
 		return
 	}
+	f.RevealedTiles = append(f.RevealedTiles, t)
 	t.IsRevealed = true
 
 	directions := []struct{ stepX, stepY int }{
