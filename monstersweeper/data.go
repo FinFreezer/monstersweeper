@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	FieldSize           = 12
+	FieldSize           = 8
 	Images              = loadImages()
 	TileClrInit         = color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
 	TileClrInitDark     = color.RGBA{0x72, 0x78, 0xA8, 0xff}

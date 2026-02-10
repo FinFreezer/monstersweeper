@@ -1,9 +1,9 @@
 package monstersweeper
 
-import "github.com/hajimehoshi/ebiten/v2"
-
-func Init() {
-	return
+func InitTile() { //re-calculate variables after field refreshes.
+	TILE_SIZE_Y = float32((GAME_AREA_HEIGHT - ((FieldSize - 1) * TILE_MARGIN)) / FieldSize)
+	TILE_SIZE_X = TILE_SIZE_Y
+	MineText = initFont(float64(TILE_SIZE_Y) * 0.8)
 }
 
 type Tile struct {
@@ -23,7 +23,6 @@ type Mine struct {
 	isFlagged bool
 	posX      float32
 	posY      float32
-	mineImg   *ebiten.Image
 }
 
 func (m *Mine) returnPos() (x, y float32) {

@@ -81,8 +81,8 @@ func (f *Field) addMines() {
 		ratio = 0.20
 	}
 	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ { // Mine density
-		randomX := r.Intn(8) + 1
-		randomY := r.Intn(8) + 1
+		randomX := r.Intn(FieldSize) + 1
+		randomY := r.Intn(FieldSize) + 1
 
 		if minesPos[randomX] == nil {
 			minesPos[randomX] = make(map[int]bool)
@@ -100,7 +100,7 @@ func (f *Field) addMines() {
 					minesPos[randomX] = make(map[int]bool)
 				}
 
-				mine := Mine{isFlagged: false, posX: float32(randomX), posY: float32(randomY), mineImg: MineImg}
+				mine := Mine{isFlagged: false, posX: float32(randomX), posY: float32(randomY)}
 				mines = append(mines, mine)
 				minesPos[randomX][randomY] = true
 				break

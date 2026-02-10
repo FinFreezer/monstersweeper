@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image/color"
 	"log"
-
 	"strconv"
 
 	d "github.com/finfreezer/monstersweeper/monstersweeper"
@@ -15,12 +14,23 @@ import (
 )
 
 type Game struct {
-	field    *d.Field
-	input    *d.Input
-	GameOver bool
+	field      *d.Field
+	input      *d.Input
+	GameOver   bool
+	StageClear bool
 }
 
 func (g *Game) Update() error {
+	if g.StageClear {
+		d.FirstClick = true
+		d.FieldSize += 2
+		d.InitTile()
+		f, err := d.InitField()
+		g.field = f
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	if g.GameOver {
 		return nil
 	}
@@ -43,7 +53,8 @@ func (g *Game) Update() error {
 		g.field.FindClickedTile(posX, posY, g.input.WasRightClick())
 		g.input.ClearRightClick()
 	}
-	g.GameOver = g.checkGameOver()
+	g.StageClear = g.checkStageClear()
+	//g.GameOver = g.checkGameOver()
 	return nil
 }
 
@@ -149,6 +160,14 @@ func (g *Game) checkGameOver() bool {
 	}
 	return false
 }
+
+func (g *Game) checkStageClear() bool {
+	if len(g.field.RevealedTiles) == (len(g.field.Tiles) - len(g.field.MineTiles)) {
+		return true
+	}
+	return false
+}
+
 func (g *Game) drawShaders(screen *ebiten.Image, t *d.Tile) {
 	vector.FillRect(screen, (t.OriginX + t.Width - 10), t.OriginY, 10, t.Height, d.TileClrInitDark, false)
 	vector.FillRect(screen, t.OriginX, t.OriginY+t.Height-10, t.Width-10, 10, d.TileClrInitDark, false)
