@@ -33,6 +33,7 @@ var (
 	TILE_SIZE_X         = TILE_SIZE_Y
 	TopCornerPath       = drawTopCorner()
 	BottomCornerPath    = drawBottomCorner()
+	ShaderSize          = TILE_SIZE_Y * 0.1
 )
 
 type TextType struct {
@@ -127,8 +128,8 @@ func drawTopCorner() vector.Path {
 	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
 	drawOp.ColorScale.ScaleWithColor(TileClrInitDark)
 	path.MoveTo(0, 0)
-	path.LineTo(0, 10)
-	path.LineTo(-10, 10)
+	path.LineTo(0, ShaderSize)
+	path.LineTo(-ShaderSize, ShaderSize)
 	path.LineTo(0, 0)
 	path.Close()
 	//vector.FillPath(screen, &path, nil, drawOp)
@@ -142,8 +143,8 @@ func drawBottomCorner() vector.Path {
 	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
 	drawOp.ColorScale.ScaleWithColor(TileClrInitLight)
 	path.MoveTo(0, 0)
-	path.LineTo(0, 10)
-	path.LineTo(10, 0)
+	path.LineTo(0, ShaderSize)
+	path.LineTo(ShaderSize, 0)
 	path.LineTo(0, 0)
 	path.Close()
 	//vector.FillPath(screen, &path, nil, drawOp)
