@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"log"
 	"strconv"
+	"time"
 
 	d "github.com/finfreezer/monstersweeper/monstersweeper"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,14 +15,34 @@ import (
 )
 
 type Game struct {
-	field      *d.Field
-	input      *d.Input
-	GameOver   bool
-	StageClear bool
+	field        *d.Field
+	input        *d.Input
+	GameOver     bool
+	StageClear   bool
+	ContinueFlag bool
+	lockInput    bool
 }
 
 func (g *Game) Update() error {
+	if g.input == nil {
+		i := d.InitInput()
+		g.input = i
+	}
+
+	g.input.Update()
+
 	if g.StageClear {
+		if g.lockInput {
+			time.Sleep(2 * time.Second)
+			g.lockInput = false
+		}
+
+		if !g.ContinueFlag {
+			if g.input.IsActive() {
+				g.ContinueFlag = true
+			}
+			return nil
+		}
 		d.FirstClick = true
 		d.FieldSize += 2
 		d.InitTile()
@@ -29,6 +50,7 @@ func (g *Game) Update() error {
 		g.field = f
 		if err != nil {
 			log.Fatal(err)
+			g.StageClear = false
 		}
 	}
 	if g.GameOver {
@@ -42,12 +64,6 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if g.input == nil {
-		i := d.InitInput()
-		g.input = i
-	}
-
-	g.input.Update()
 	if g.input.IsActive() {
 		posX, posY := g.input.ReturnPos()
 		g.field.FindClickedTile(posX, posY, g.input.WasRightClick())
@@ -136,6 +152,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		text.Draw(screen, "Game Over", f, op)
 	}
 
+	if g.StageClear {
+		vector.FillRect(screen, 0, 0, d.SCREENWIDTH, d.SCREENHEIGHT, color.RGBA{50, 50, 50, 200}, false)
+		op := &text.DrawOptions{}
+		f := &text.GoTextFace{
+			Source: d.GeneralText.Source,
+			Size:   d.GeneralText.Size,
+		}
+		x, y := text.Measure("Stage Cleared, press left click to continue", f, 0)
+		op.GeoM.Translate((d.SCREENHEIGHT - x), (d.SCREENHEIGHT-y)/2)
+		op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
+
+		text.Draw(screen, "Stage Cleared", f, op)
+		op.GeoM.Translate(-90, y)
+		text.Draw(screen, "Press left click to continue", f, op)
+	}
+
 	op := &text.DrawOptions{}
 	f := &text.GoTextFace{
 		Source: d.GeneralText.Source,
@@ -164,6 +196,7 @@ func (g *Game) checkGameOver() bool {
 
 func (g *Game) checkStageClear() bool {
 	if len(g.field.RevealedTiles) == (len(g.field.Tiles) - len(g.field.MineTiles)) {
+		g.lockInput = true
 		return true
 	}
 	return false

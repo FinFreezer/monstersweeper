@@ -42,6 +42,8 @@ func (i *Input) ClearRightClick() {
 }
 
 func (i *Input) Update() {
+	i.mouseActive = false
+
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		i.mousePosX, i.mousePosY = ebiten.CursorPosition()
 		i.mouseActive = true
