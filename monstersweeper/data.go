@@ -124,29 +124,23 @@ func readFileToBytes() []byte {
 func drawTopCorner() vector.Path {
 	var path vector.Path
 	drawOp := &vector.DrawPathOptions{}
-	//addOp := &vector.AddPathOptions{}
-	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
 	drawOp.ColorScale.ScaleWithColor(TileClrInitDark)
 	path.MoveTo(0, 0)
 	path.LineTo(0, ShaderSize)
 	path.LineTo(-ShaderSize, ShaderSize)
 	path.LineTo(0, 0)
 	path.Close()
-	//vector.FillPath(screen, &path, nil, drawOp)
 	return path
 }
 
 func drawBottomCorner() vector.Path {
 	var path vector.Path
 	drawOp := &vector.DrawPathOptions{}
-	//addOp := &vector.AddPathOptions{}
-	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
 	drawOp.ColorScale.ScaleWithColor(TileClrInitLight)
 	path.MoveTo(0, 0)
 	path.LineTo(0, ShaderSize)
 	path.LineTo(ShaderSize, 0)
 	path.LineTo(0, 0)
 	path.Close()
-	//vector.FillPath(screen, &path, nil, drawOp)
 	return path
 }
