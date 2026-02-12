@@ -16,3 +16,7 @@ func (p *Player) hasKey() bool {
 	}
 	return false
 }
+
+func (p *Player) rollDie() {
+	return
+}

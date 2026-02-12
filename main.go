@@ -44,13 +44,13 @@ func (g *Game) Update() error {
 			return nil
 		}
 		d.FirstClick = true
+		g.ContinueFlag = false
 		d.FieldSize += 2
 		d.InitTile()
 		f, err := d.InitField()
 		g.field = f
 		if err != nil {
 			log.Fatal(err)
-			g.StageClear = false
 		}
 	}
 	if g.GameOver {
