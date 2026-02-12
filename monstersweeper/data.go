@@ -13,6 +13,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 var (
@@ -30,6 +31,8 @@ var (
 	GeneralText         = initFont(32)
 	TILE_SIZE_Y         = float32((GAME_AREA_HEIGHT - ((FieldSize - 1) * TILE_MARGIN)) / FieldSize)
 	TILE_SIZE_X         = TILE_SIZE_Y
+	TopCornerPath       = drawTopCorner()
+	BottomCornerPath    = drawBottomCorner()
 )
 
 type TextType struct {
@@ -115,4 +118,34 @@ func readFileToBytes() []byte {
 	}
 
 	return data
+}
+
+func drawTopCorner() vector.Path {
+	var path vector.Path
+	drawOp := &vector.DrawPathOptions{}
+	//addOp := &vector.AddPathOptions{}
+	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
+	drawOp.ColorScale.ScaleWithColor(TileClrInitDark)
+	path.MoveTo(0, 0)
+	path.LineTo(0, 10)
+	path.LineTo(-10, 10)
+	path.LineTo(0, 0)
+	path.Close()
+	//vector.FillPath(screen, &path, nil, drawOp)
+	return path
+}
+
+func drawBottomCorner() vector.Path {
+	var path vector.Path
+	drawOp := &vector.DrawPathOptions{}
+	//addOp := &vector.AddPathOptions{}
+	//addOp.GeoM.Translate(float64(beginX), float64(beginY))
+	drawOp.ColorScale.ScaleWithColor(TileClrInitLight)
+	path.MoveTo(0, 0)
+	path.LineTo(0, 10)
+	path.LineTo(10, 0)
+	path.LineTo(0, 0)
+	path.Close()
+	//vector.FillPath(screen, &path, nil, drawOp)
+	return path
 }

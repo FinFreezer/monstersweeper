@@ -110,6 +110,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			}
 			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, d.TileClrInit, false)
 			//Add shading
+
 			g.drawShaders(screen, t)
 			g.drawCorners(screen, t)
 		}
@@ -176,33 +177,28 @@ func (g *Game) drawShaders(screen *ebiten.Image, t *d.Tile) {
 }
 
 func (g *Game) drawCorners(screen *ebiten.Image, t *d.Tile) {
-	g.drawTopCorner(screen, t.OriginX+t.Width, t.OriginY)
-	g.drawBottomCorner(screen, t.OriginX+t.Width, t.OriginY)
+	g.drawTopCorner(screen, t.OriginX, t.OriginY)
+	g.drawBottomCorner(screen, t.OriginX, t.OriginY)
 }
 
 func (g *Game) drawTopCorner(screen *ebiten.Image, beginX, beginY float32) {
+	var path vector.Path
 	drawOp := &vector.DrawPathOptions{}
 	drawOp.ColorScale.ScaleWithColor(d.TileClrInitDark)
-	var path vector.Path
-	path.MoveTo(beginX, beginY)
-	path.LineTo(beginX, beginY+10)
-	path.LineTo(beginX-10, beginY+10)
-	path.LineTo(beginX, beginY)
-	path.Close()
+	pathOp := &vector.AddPathOptions{}
+	pathOp.GeoM.Translate(float64(beginX+d.TILE_SIZE_X), float64(beginY))
+	path.AddPath(&d.TopCornerPath, pathOp)
 	vector.FillPath(screen, &path, nil, drawOp)
 	return
 }
 
 func (g *Game) drawBottomCorner(screen *ebiten.Image, beginX, beginY float32) {
-	drawOp := &vector.DrawPathOptions{}
 	var path vector.Path
+	drawOp := &vector.DrawPathOptions{}
 	drawOp.ColorScale.ScaleWithColor(d.TileClrInitLight)
-	beginX = beginX - d.TILE_SIZE_X
-	path.MoveTo(beginX, beginY+d.TILE_SIZE_Y-10)
-	path.LineTo(beginX+10, beginY+d.TILE_SIZE_Y-10)
-	path.LineTo(beginX, beginY+d.TILE_SIZE_Y)
-	path.LineTo(beginX, beginY+d.TILE_SIZE_Y-10)
-	path.Close()
+	pathOp := &vector.AddPathOptions{}
+	pathOp.GeoM.Translate(float64(beginX), float64(beginY+d.TILE_SIZE_Y-10))
+	path.AddPath(&d.BottomCornerPath, pathOp)
 	vector.FillPath(screen, &path, nil, drawOp)
 	return
 }
