@@ -6,7 +6,6 @@ import (
 	"math/rand"
 
 	"fmt"
-	"time"
 )
 
 type Field struct {
@@ -71,9 +70,7 @@ func InitField() (*Field, error) {
 }
 
 func (f *Field) addMines() {
-	seedProd := time.Now().UnixNano()
-	//var seedDebug int64 = 1234
-	r := rand.New(rand.NewSource(seedProd))
+	r := rand.New(rand.NewSource(RNGSeed))
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
 	ratio := 0.15
@@ -261,4 +258,17 @@ func (f *Field) includeMines(t *Tile) {
 			continue
 		}
 	}
+}
+
+func (f *Field) addMonsters(t *Tile) {
+	r := rand.New(rand.NewSource(RNGSeed))
+	encounters := len(f.MineTiles)
+
+	keyHolder := r.Intn(encounters)
+
+	for _, tile := range f.MineTiles {
+		monster := r.Intn(5)
+		tile.Encounter = newMonster(monster)
+	}
+	f.MineTiles[keyHolder].Encounter.KeyCarrier = true
 }

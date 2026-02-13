@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -17,6 +18,7 @@ import (
 )
 
 var (
+	RNGSeed             = time.Now().UnixNano()
 	FieldSize           = 8
 	Images              = loadImages()
 	TileClrInit         = color.RGBA{0xA9, 0xAD, 0xD1, 0xff}

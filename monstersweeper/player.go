@@ -5,6 +5,7 @@ type Player struct {
 	Strength     int
 	Dexterity    int
 	Intelligence int
+	PrimaryStat  string
 	Items        map[string]int //Name maps to the amount carried.
 }
 
@@ -19,4 +20,15 @@ func (p *Player) hasKey() bool {
 
 func (p *Player) rollDie() {
 	return
+}
+
+func NewPlayer() *Player {
+	p := Player{
+		Health:       30,
+		Strength:     14,
+		Dexterity:    10,
+		Intelligence: 6,
+		PrimaryStat:  "Dexterity",
+	}
+	return &p
 }

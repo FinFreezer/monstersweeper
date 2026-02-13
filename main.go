@@ -21,9 +21,17 @@ type Game struct {
 	StageClear   bool
 	ContinueFlag bool
 	lockInput    bool
+	player       *d.Player
+	ActiveBattle bool
 }
 
 func (g *Game) Update() error {
+
+	if g.player == nil {
+		p := d.NewPlayer()
+		g.player = p
+	}
+
 	if g.input == nil {
 		i := d.InitInput()
 		g.input = i
@@ -33,6 +41,8 @@ func (g *Game) Update() error {
 
 	if g.StageClear {
 		if g.lockInput {
+			//Avoid player accidentally clicking through
+			//the end-of-stage screen instantly.
 			time.Sleep(2 * time.Second)
 			g.lockInput = false
 		}

@@ -20,6 +20,7 @@ type Tile struct {
 	IsRevealed    bool
 	AdjacentMines int
 	IsFlagged     bool
+	Encounter     *Monster
 }
 
 type Mine struct {
