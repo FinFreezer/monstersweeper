@@ -2,10 +2,9 @@ package monstersweeper
 
 import (
 	"errors"
-	"math"
-	"math/rand"
-
 	"fmt"
+	"math"
+	//"math/rand"
 )
 
 type Field struct {
@@ -63,6 +62,7 @@ func InitField() (*Field, error) {
 	}
 	f.calcTilePos()
 	f.addMines()
+	f.addMonsters()
 	if len(f.Tiles) == 0 {
 		return &f, errors.New("Field initialization failed.")
 	}
@@ -70,16 +70,20 @@ func InitField() (*Field, error) {
 }
 
 func (f *Field) addMines() {
-	r := rand.New(rand.NewSource(RNGSeed))
+	//r := rand.New(rand.NewSource(RNGSeed))
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
-	ratio := 0.15
+	ratio := 0.15 // Mine density
 	if FieldSize >= 16 {
 		ratio = 0.20
 	}
-	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ { // Mine density
-		randomX := r.Intn(FieldSize) + 1
-		randomY := r.Intn(FieldSize) + 1
+	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ {
+		rollX := RollDice(FieldSize, 1)
+		randomX := rollX[0] + 1
+		rollY := RollDice(FieldSize, 1)
+		randomY := rollY[0] + 1
+		//randomX := r.Intn(FieldSize) + 1
+		//randomY := r.Intn(FieldSize) + 1
 
 		if minesPos[randomX] == nil {
 			minesPos[randomX] = make(map[int]bool)
@@ -87,8 +91,13 @@ func (f *Field) addMines() {
 
 		for {
 			if minesPos[randomX][randomY] {
-				randomX = r.Intn(FieldSize) + 1
-				randomY = r.Intn(FieldSize) + 1
+				rollX = RollDice(FieldSize, 1)
+				randomX = rollX[0] + 1
+
+				rollY = RollDice(FieldSize, 1)
+				randomY = rollY[0] + 1
+				//randomX = r.Intn(FieldSize) + 1
+				//randomY = r.Intn(FieldSize) + 1
 				continue
 
 			} else {
@@ -260,15 +269,19 @@ func (f *Field) includeMines(t *Tile) {
 	}
 }
 
-func (f *Field) addMonsters(t *Tile) {
-	r := rand.New(rand.NewSource(RNGSeed))
+func (f *Field) addMonsters() {
+	//r := rand.New(rand.NewSource(RNGSeed))
 	encounters := len(f.MineTiles)
 
-	keyHolder := r.Intn(encounters)
+	roll := RollDice(encounters, 1)
+	keyHolder := roll[0]
+	//keyHolder := r.Intn(encounters)
 
 	for _, tile := range f.MineTiles {
-		monster := r.Intn(5)
-		tile.Encounter = newMonster(monster)
+		roll := RollDice(5, 1)
+		monster := roll[0]
+		//monster := r.Intn(5)
+		tile.Encounter = NewMonster(monster)
 	}
 	f.MineTiles[keyHolder].Encounter.KeyCarrier = true
 }

@@ -29,84 +29,67 @@ var (
 	monsters = []string{"Imp", "Skeleton", "Zombie", "Witch", "Orc"}
 )
 
-func InitMonster() {
-	return
-}
-
-func newMonster(id int) (m *Monster) {
-	switch m.MonsterId {
+func NewMonster(id int) (m *Monster) {
+	switch id {
 	case 0:
-		newImp(m.MonsterId)
+		m = newImp(id)
+		return m
 	case 1:
-		newSkeleton(m.MonsterId)
+		m = newSkeleton(id)
+		return m
 	case 2:
-		newZombie(m.MonsterId)
+		m = newZombie(id)
+		return m
 	case 3:
-		newWitch(m.MonsterId)
+		m = newWitch(id)
+		return m
 	case 4:
-		newOrc(m.MonsterId)
+		m = newOrc(id)
+		return m
 	default:
 		log.Fatal("Unable to reach monster.")
 	}
 	return
 }
 
-func newImp(id int) *Monster {
-	m := Monster{
-		Name:         "Imp",
-		Health:       5,
-		Strength:     6,
-		Dexterity:    8,
-		Intelligence: 8,
-		MonsterId:    id,
+func (m *Monster) rollAccuracy(target Actor) bool {
+	rolls := RollDice(6, 2)
+
+	for _, roll := range rolls {
+		if roll > 4 {
+			if target.getDexterity() >= 10 {
+				dodge := (target.getDexterity() % 8) / 2
+
+				rollDodge := RollDice(10, 1)
+				if rollDodge[0] < dodge {
+					continue
+				} else {
+					return true
+				}
+
+			}
+		}
 	}
-	return &m
+	return false
 }
 
-func newSkeleton(id int) *Monster {
-	m := Monster{
-		Name:         "Skeleton",
-		Health:       8,
-		Strength:     10,
-		Dexterity:    5,
-		Intelligence: 5,
-		MonsterId:    id,
-	}
-	return &m
+func (m *Monster) dealDamage(target Actor) {
+	damageRoll := RollDice(4, 2)
+	damage := m.Strength + damageRoll[0] + damageRoll[1]
+	target.takeDamage(damage)
 }
 
-func newZombie(id int) *Monster {
-	m := Monster{
-		Name:         "Zombie",
-		Health:       12,
-		Strength:     8,
-		Dexterity:    4,
-		Intelligence: 2,
-		MonsterId:    id,
-	}
-	return &m
+func (m *Monster) takeDamage(damage int) {
+	m.Health -= damage
 }
 
-func newWitch(id int) *Monster {
-	m := Monster{
-		Name:         "Witch",
-		Health:       4,
-		Strength:     6,
-		Dexterity:    10,
-		Intelligence: 10,
-		MonsterId:    id,
-	}
-	return &m
+func (m *Monster) getDexterity() int {
+	return m.Dexterity
 }
 
-func newOrc(id int) *Monster {
-	m := Monster{
-		Name:         "Orc",
-		Health:       14,
-		Strength:     10,
-		Dexterity:    4,
-		Intelligence: 2,
-		MonsterId:    id,
+func (m *Monster) isDead() bool {
+	if m.Health <= 0 {
+		return true
 	}
-	return &m
+	return false
 }

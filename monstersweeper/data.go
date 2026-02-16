@@ -8,8 +8,10 @@ import (
 	"image/color"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -18,7 +20,7 @@ import (
 )
 
 var (
-	RNGSeed             = time.Now().UnixNano()
+	DebugSeed           = 12345
 	FieldSize           = 8
 	Images              = loadImages()
 	TileClrInit         = color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
@@ -41,6 +43,14 @@ var (
 type TextType struct {
 	Source *text.GoTextFaceSource
 	Size   float64
+}
+
+type Actor interface {
+	rollAccuracy(target Actor) bool
+	dealDamage(target Actor)
+	takeDamage(damage int)
+	getDexterity() int
+	isDead() bool
 }
 
 const (
@@ -145,4 +155,22 @@ func drawBottomCorner() vector.Path {
 	path.LineTo(0, 0)
 	path.Close()
 	return path
+}
+
+func RollDice(faces, dice int) []int {
+
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
+		funcName := runtime.FuncForPC(pc).Name()
+		fmt.Printf("RollDice called from %s at %s:%d with dice=%d\n",
+			funcName, file, line, dice)
+	}
+
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rolls := []int{}
+	for i := 0; i < dice; i++ {
+		result := r.Intn(faces) + 1
+		rolls = append(rolls, result)
+	}
+	return rolls
 }

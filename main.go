@@ -70,7 +70,7 @@ func (g *Game) Update() error {
 		f, err := d.InitField()
 		g.field = f
 		if err != nil {
-			fmt.Println("Error: %s", err)
+			fmt.Printf("Error: %s", err)
 		}
 	}
 
