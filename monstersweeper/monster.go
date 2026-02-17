@@ -32,19 +32,19 @@ var (
 
 func NewMonster(id int) (m *Monster) {
 	switch id {
-	case 0:
+	case 1:
 		m = newImp(id)
 		return m
-	case 1:
+	case 2:
 		m = newSkeleton(id)
 		return m
-	case 2:
+	case 3:
 		m = newZombie(id)
 		return m
-	case 3:
+	case 4:
 		m = newWitch(id)
 		return m
-	case 4:
+	case 5:
 		m = newOrc(id)
 		return m
 	default:
@@ -76,12 +76,14 @@ func (m *Monster) rollAccuracy(target Actor) bool {
 							continue
 						}
 					}
+
 				case *Monster:
 					if rollWithoutDex(baseDodgeChance) {
 						return true
 					} else {
 						continue
 					}
+
 				default:
 					return false
 				}

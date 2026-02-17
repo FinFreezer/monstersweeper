@@ -9,11 +9,13 @@ import (
 )
 
 type Field struct {
-	Tiles         []*Tile
-	Grid          map[int]map[int]*Tile
-	MineTiles     []*Tile
-	RevealedTiles []*Tile
-	Flags         int
+	Tiles           []*Tile
+	Grid            map[int]map[int]*Tile
+	MineTiles       []*Tile
+	RevealedTiles   []*Tile
+	Flags           int
+	ActiveBattle    bool
+	ActiveEncounter *Monster
 }
 
 func (f *Field) ReturnMineAmt() (total, left int) {
@@ -63,7 +65,7 @@ func InitField() (*Field, error) {
 	}
 	f.calcTilePos()
 	f.addMines()
-	//f.addMonsters()
+	f.addMonsters()
 	if len(f.Tiles) == 0 {
 		return &f, errors.New("Field initialization failed.")
 	}
@@ -150,6 +152,8 @@ func (f *Field) tileClicked(t *Tile) {
 		}
 		t.IsRevealed = true
 		fmt.Println("Oops, you've hit a mine.")
+		f.ActiveBattle = true
+		f.ActiveEncounter = t.Encounter
 		return
 	}
 	FirstClick = false
@@ -262,18 +266,20 @@ func (f *Field) includeMines(t *Tile) {
 }
 
 func (f *Field) addMonsters() {
-	//r := rand.New(rand.NewSource(RNGSeed))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	encounters := len(f.MineTiles)
 
-	roll := RollDice(encounters, 1)
-	keyHolder := roll[0]
-	//keyHolder := r.Intn(encounters)
+	keyHolder := r.Intn(encounters)
 
 	for _, tile := range f.MineTiles {
-		roll := RollDice(5, 1)
-		monster := roll[0]
-		//monster := r.Intn(5)
+		monster := r.Intn(5) + 1
 		tile.Encounter = NewMonster(monster)
 	}
 	f.MineTiles[keyHolder].Encounter.KeyCarrier = true
+
+	for _, tile := range f.MineTiles {
+		if tile.Encounter == nil {
+			errors.New("No encounter found.")
+		}
+	}
 }

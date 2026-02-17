@@ -11,7 +11,7 @@ type Player struct {
 	Items        map[string]int //Name maps to the amount carried.
 }
 
-func (p *Player) hasKey() bool {
+func (p *Player) HasKey() bool {
 	if val, ok := p.Items["Key"]; ok {
 		if val > 0 {
 			return true

@@ -37,9 +37,22 @@ func (g *Game) Update() error {
 		g.input = i
 	}
 
-	g.input.Update()
+	if !g.ActiveBattle {
+		g.input.Update()
+	}
 
-	if g.StageClear {
+	if g.field != nil && g.field.ActiveBattle && !g.ActiveBattle && g.field.ActiveEncounter != nil {
+		g.ActiveBattle = true
+		go func() {
+			fmt.Println(g.field.ActiveEncounter.MonsterId)
+			d.StartBattle(g.player, g.field.ActiveEncounter)
+			g.field.ActiveBattle = false
+			g.field.ActiveEncounter = nil
+			g.ActiveBattle = false
+		}()
+	}
+
+	if g.StageClear && g.player.HasKey() {
 		if g.lockInput {
 			//Avoid player accidentally clicking through
 			//the end-of-stage screen instantly.
@@ -57,6 +70,7 @@ func (g *Game) Update() error {
 		g.ContinueFlag = false
 		d.FieldSize += 2
 		d.InitTile()
+		g.player.Items["Key"] = 0
 		f, err := d.InitField()
 		g.field = f
 		if err != nil {
@@ -80,7 +94,7 @@ func (g *Game) Update() error {
 		g.input.ClearRightClick()
 	}
 	g.StageClear = g.checkStageClear()
-	//g.GameOver = g.checkGameOver()
+	g.GameOver = g.checkGameOver()
 	return nil
 }
 
@@ -140,7 +154,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			g.drawShaders(screen, t)
 			g.drawCorners(screen, t)
 		}
+	}
 
+	if g.field != nil && g.field.ActiveBattle && g.field.ActiveEncounter != nil {
+		vector.FillRect(screen, 0, 0, d.SCREENWIDTH, d.SCREENHEIGHT, color.RGBA{50, 50, 50, 200}, false)
+		op := &text.DrawOptions{}
+		f := &text.GoTextFace{
+			Source: d.GeneralText.Source,
+			Size:   d.GeneralText.Size,
+		}
+		x, y := text.Measure("Stage Cleared, press left click to continue", f, 0)
+		op.GeoM.Translate((d.SCREENHEIGHT - x), (d.SCREENHEIGHT-y)/2)
+		op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
+
+		text.Draw(screen, "Battle in progess...", f, op)
+		op.GeoM.Translate(-90, y)
+		playerStatus := fmt.Sprintf("Player health remaining: %d", g.player.Health)
+		text.Draw(screen, playerStatus, f, op)
+		op.GeoM.Translate(-90, y)
+		monsterStatus := fmt.Sprintf("Monster health remaining: %d", g.field.ActiveEncounter.Health)
+		text.Draw(screen, monsterStatus, f, op)
 	}
 
 	g.input.Draw(screen)
@@ -162,7 +195,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		text.Draw(screen, "Game Over", f, op)
 	}
 
-	if g.StageClear {
+	if g.StageClear && g.player.HasKey() {
 		vector.FillRect(screen, 0, 0, d.SCREENWIDTH, d.SCREENHEIGHT, color.RGBA{50, 50, 50, 200}, false)
 		op := &text.DrawOptions{}
 		f := &text.GoTextFace{
@@ -198,7 +231,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *Game) checkGameOver() bool {
-	if len(g.field.RevealedTiles) == (len(g.field.Tiles) - len(g.field.MineTiles)) {
+	if g.player.Health <= 0 {
 		return true
 	}
 	return false

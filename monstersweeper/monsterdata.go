@@ -1,6 +1,7 @@
 package monstersweeper
 
 func newImp(id int) *Monster {
+	id = RollDice(256, 1)[0]
 	m := Monster{
 		Name:         "Imp",
 		MaxHealth:    5,
@@ -14,6 +15,7 @@ func newImp(id int) *Monster {
 }
 
 func newSkeleton(id int) *Monster {
+	id = RollDice(256, 1)[0]
 	m := Monster{
 		Name:         "Skeleton",
 		MaxHealth:    8,
@@ -27,6 +29,7 @@ func newSkeleton(id int) *Monster {
 }
 
 func newZombie(id int) *Monster {
+	id = RollDice(256, 1)[0]
 	m := Monster{
 		Name:         "Zombie",
 		MaxHealth:    12,
@@ -40,6 +43,7 @@ func newZombie(id int) *Monster {
 }
 
 func newWitch(id int) *Monster {
+	id = RollDice(256, 1)[0]
 	m := Monster{
 		Name:         "Witch",
 		MaxHealth:    4,
@@ -53,6 +57,7 @@ func newWitch(id int) *Monster {
 }
 
 func newOrc(id int) *Monster {
+	id = RollDice(256, 1)[0]
 	m := Monster{
 		Name:         "Orc",
 		MaxHealth:    14,
