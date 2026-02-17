@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	//"math/rand"
+	"math/rand"
+	"time"
 )
 
 type Field struct {
@@ -62,7 +63,7 @@ func InitField() (*Field, error) {
 	}
 	f.calcTilePos()
 	f.addMines()
-	f.addMonsters()
+	//f.addMonsters()
 	if len(f.Tiles) == 0 {
 		return &f, errors.New("Field initialization failed.")
 	}
@@ -70,7 +71,7 @@ func InitField() (*Field, error) {
 }
 
 func (f *Field) addMines() {
-	//r := rand.New(rand.NewSource(RNGSeed))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	minesPos := make(map[int]map[int]bool)
 	mines := []Mine{}
 	ratio := 0.15 // Mine density
@@ -78,12 +79,8 @@ func (f *Field) addMines() {
 		ratio = 0.20
 	}
 	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ {
-		rollX := RollDice(FieldSize, 1)
-		randomX := rollX[0] + 1
-		rollY := RollDice(FieldSize, 1)
-		randomY := rollY[0] + 1
-		//randomX := r.Intn(FieldSize) + 1
-		//randomY := r.Intn(FieldSize) + 1
+		randomX := r.Intn(FieldSize) + 1
+		randomY := r.Intn(FieldSize) + 1
 
 		if minesPos[randomX] == nil {
 			minesPos[randomX] = make(map[int]bool)
@@ -91,13 +88,8 @@ func (f *Field) addMines() {
 
 		for {
 			if minesPos[randomX][randomY] {
-				rollX = RollDice(FieldSize, 1)
-				randomX = rollX[0] + 1
-
-				rollY = RollDice(FieldSize, 1)
-				randomY = rollY[0] + 1
-				//randomX = r.Intn(FieldSize) + 1
-				//randomY = r.Intn(FieldSize) + 1
+				randomX = r.Intn(FieldSize) + 1
+				randomY = r.Intn(FieldSize) + 1
 				continue
 
 			} else {

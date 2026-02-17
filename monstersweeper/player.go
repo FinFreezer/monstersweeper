@@ -1,6 +1,8 @@
 package monstersweeper
 
 type Player struct {
+	Name         string
+	MaxHealth    int
 	Health       int
 	Strength     int
 	Dexterity    int
@@ -20,6 +22,8 @@ func (p *Player) hasKey() bool {
 
 func NewPlayer() *Player {
 	p := Player{
+		Name:         "Knight",
+		MaxHealth:    30,
 		Health:       30,
 		Strength:     14,
 		Dexterity:    10,
@@ -43,16 +47,19 @@ func (p *Player) rollAccuracy(target Actor) bool {
 				} else {
 					return true
 				}
-
+			} else {
+				return true
 			}
+		} else {
+			return false
 		}
 	}
 	return false
 }
 
 func (p *Player) dealDamage(target Actor) {
-	rollDamage := RollDice(4, 3)
-	damage := p.Strength + rollDamage[0] + rollDamage[1] + rollDamage[2]
+	rollDamage := RollDice(3, 2)
+	damage := p.Strength/3 + rollDamage[0] + rollDamage[1]
 	target.takeDamage(damage)
 }
 
@@ -69,4 +76,12 @@ func (p *Player) isDead() bool {
 		return true
 	}
 	return false
+}
+
+func (p *Player) getHealth() int {
+	return p.Health
+}
+
+func (p *Player) getName() string {
+	return p.Name
 }

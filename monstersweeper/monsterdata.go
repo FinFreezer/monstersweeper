@@ -3,6 +3,7 @@ package monstersweeper
 func newImp(id int) *Monster {
 	m := Monster{
 		Name:         "Imp",
+		MaxHealth:    5,
 		Health:       5,
 		Strength:     6,
 		Dexterity:    10,
@@ -15,6 +16,7 @@ func newImp(id int) *Monster {
 func newSkeleton(id int) *Monster {
 	m := Monster{
 		Name:         "Skeleton",
+		MaxHealth:    8,
 		Health:       8,
 		Strength:     10,
 		Dexterity:    5,
@@ -27,6 +29,7 @@ func newSkeleton(id int) *Monster {
 func newZombie(id int) *Monster {
 	m := Monster{
 		Name:         "Zombie",
+		MaxHealth:    12,
 		Health:       12,
 		Strength:     8,
 		Dexterity:    4,
@@ -39,6 +42,7 @@ func newZombie(id int) *Monster {
 func newWitch(id int) *Monster {
 	m := Monster{
 		Name:         "Witch",
+		MaxHealth:    4,
 		Health:       4,
 		Strength:     6,
 		Dexterity:    10,
@@ -51,6 +55,7 @@ func newWitch(id int) *Monster {
 func newOrc(id int) *Monster {
 	m := Monster{
 		Name:         "Orc",
+		MaxHealth:    14,
 		Health:       14,
 		Strength:     10,
 		Dexterity:    4,

@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -51,6 +50,8 @@ type Actor interface {
 	takeDamage(damage int)
 	getDexterity() int
 	isDead() bool
+	getHealth() int
+	getName() string
 }
 
 const (
@@ -159,12 +160,12 @@ func drawBottomCorner() vector.Path {
 
 func RollDice(faces, dice int) []int {
 
-	pc, file, line, ok := runtime.Caller(1)
+	/*pc, file, line, ok := runtime.Caller(1)
 	if ok {
 		funcName := runtime.FuncForPC(pc).Name()
 		fmt.Printf("RollDice called from %s at %s:%d with dice=%d\n",
 			funcName, file, line, dice)
-	}
+	}*/
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	rolls := []int{}

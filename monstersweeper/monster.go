@@ -6,6 +6,7 @@ import (
 
 type Monster struct {
 	Name         string
+	MaxHealth    int
 	Health       int
 	Strength     int
 	Dexterity    int
@@ -58,24 +59,62 @@ func (m *Monster) rollAccuracy(target Actor) bool {
 	for _, roll := range rolls {
 		if roll > 4 {
 			if target.getDexterity() >= 10 {
-				dodge := (target.getDexterity() % 8) / 2
+				baseDodgeChance := (target.getDexterity() % 8) / 2
 
-				rollDodge := RollDice(10, 1)
-				if rollDodge[0] < dodge {
-					continue
-				} else {
-					return true
+				switch t := target.(type) {
+				case *Player:
+					if t.PrimaryStat == "Dexterity" {
+						if rollAgainstDex(baseDodgeChance) {
+							return true
+						} else {
+							continue
+						}
+					} else {
+						if rollWithoutDex(baseDodgeChance) {
+							return true
+						} else {
+							continue
+						}
+					}
+				case *Monster:
+					if rollWithoutDex(baseDodgeChance) {
+						return true
+					} else {
+						continue
+					}
+				default:
+					return false
 				}
-
+			} else {
+				return true
 			}
+		} else {
+			continue
 		}
 	}
 	return false
 }
 
+func rollAgainstDex(baseDodgeChance int) bool {
+	rollHitDodge := RollDice(10, 2)
+	if rollHitDodge[0] > baseDodgeChance && rollHitDodge[1] > baseDodgeChance {
+		return true
+	} else {
+		return false
+	}
+}
+
+func rollWithoutDex(baseDodgeChance int) bool {
+	rollHitDodge := RollDice(10, 1)
+	if rollHitDodge[0] > baseDodgeChance {
+		return true
+	} else {
+		return false
+	}
+}
 func (m *Monster) dealDamage(target Actor) {
-	damageRoll := RollDice(4, 2)
-	damage := m.Strength + damageRoll[0] + damageRoll[1]
+	damageRoll := RollDice(2, 2)
+	damage := m.Strength/3 + damageRoll[0] + damageRoll[1]
 	target.takeDamage(damage)
 }
 
@@ -92,4 +131,12 @@ func (m *Monster) isDead() bool {
 		return true
 	}
 	return false
+}
+
+func (m *Monster) getHealth() int {
+	return m.Health
+}
+
+func (m *Monster) getName() string {
+	return m.Name
 }
