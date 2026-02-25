@@ -2,18 +2,24 @@ package monstersweeper
 
 import (
 	"log"
+	"time"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Monster struct {
-	Name         string
-	MaxHealth    int
-	Health       int
-	Strength     int
-	Dexterity    int
-	Intelligence int
-	MonsterId    int
-	KeyCarrier   bool
-	Abilities    map[string]int //Name maps to the amount carried.
+	Name          string
+	MaxHealth     int
+	Health        int
+	Strength      int
+	Dexterity     int
+	Intelligence  int
+	MonsterId     int
+	KeyCarrier    bool
+	Abilities     map[string]int //Name maps to the amount carried.
+	AnimFrames    map[string][]*ebiten.Image
+	PrevFrameTime time.Time
+	CurrentFrame  int
 }
 
 type MonsterId int

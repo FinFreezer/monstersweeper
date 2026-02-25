@@ -21,7 +21,9 @@ import (
 var (
 	DebugSeed           = 12345
 	FieldSize           = 8
-	Images              = loadImages()
+	Images              = loadImages(path_images)
+	AdvSprites          = loadImages(path_adventurer_sprites)
+	SlimeSprites        = loadImages(path_slime_sprites)
 	TileClrInit         = color.RGBA{0xA9, 0xAD, 0xD1, 0xff}
 	TileClrInitDark     = color.RGBA{0x72, 0x78, 0xA8, 0xff}
 	TileClrInitLight    = color.RGBA{0xBF, 0xC2, 0xDB, 0xff}
@@ -55,16 +57,18 @@ type Actor interface {
 }
 
 const (
-	EDGE_MARGIN      = 20
-	SCREENWIDTH      = 1280
-	SCREENHEIGHT     = 960
-	TILE_MARGIN      = 5
-	GAME_AREA_WIDTH  = SCREENWIDTH - 2*EDGE_MARGIN
-	GAME_AREA_HEIGHT = SCREENHEIGHT - 2*EDGE_MARGIN
+	EDGE_MARGIN             = 20
+	SCREENWIDTH             = 1280
+	SCREENHEIGHT            = 960
+	TILE_MARGIN             = 5
+	GAME_AREA_WIDTH         = SCREENWIDTH - 2*EDGE_MARGIN
+	GAME_AREA_HEIGHT        = SCREENHEIGHT - 2*EDGE_MARGIN
+	path_images             = "resources/images/"
+	path_adventurer_sprites = "resources/sprites/adventurer"
+	path_slime_sprites      = "resources/sprites/slime"
 )
 
-func loadImages() map[string]*ebiten.Image {
-	path := "resources/images/"
+func loadImages(path string) map[string]*ebiten.Image {
 	info, err := os.Stat(path)
 	images := make(map[string]*ebiten.Image)
 

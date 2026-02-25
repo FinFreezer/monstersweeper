@@ -16,6 +16,7 @@ type Field struct {
 	Flags           int
 	ActiveBattle    bool
 	ActiveEncounter *Monster
+	KeyTile         *Tile
 }
 
 func (f *Field) ReturnMineAmt() (total, left int) {
@@ -276,6 +277,7 @@ func (f *Field) addMonsters() {
 		tile.Encounter = NewMonster(monster)
 	}
 	f.MineTiles[keyHolder].Encounter.KeyCarrier = true
+	f.KeyTile = f.MineTiles[keyHolder]
 
 	for _, tile := range f.MineTiles {
 		if tile.Encounter == nil {

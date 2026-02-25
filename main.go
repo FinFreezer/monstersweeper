@@ -100,6 +100,11 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 
+	if g.ActiveBattle {
+		d.BattleDraw(screen)
+		return
+	}
+
 	if len(g.field.Tiles) != 0 {
 		for _, t := range g.field.Tiles {
 			if t.IsRevealed && t.IsMine {
@@ -166,20 +171,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		x, y := text.Measure("Stage Cleared, press left click to continue", f, 0)
 		op.GeoM.Translate((d.SCREENHEIGHT - x), (d.SCREENHEIGHT-y)/2)
 		op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
-
-		text.Draw(screen, "Battle in progess...", f, op)
-		op.GeoM.Translate(-90, y)
-		playerStatus := fmt.Sprintf("Player health remaining: %d", g.player.Health)
-		text.Draw(screen, playerStatus, f, op)
-		op.GeoM.Translate(-90, y)
-		monsterStatus := fmt.Sprintf("Monster health remaining: %d", g.field.ActiveEncounter.Health)
-		text.Draw(screen, monsterStatus, f, op)
 	}
 
 	g.input.Draw(screen)
 	x, y := g.input.ReturnPos()
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %.0f", ebiten.ActualFPS()))
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d, %d", x, y), 600, 0)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("TPS: %.0f", ebiten.ActualTPS()), 0, 20)
 
 	if g.GameOver {
 		vector.FillRect(screen, 0, 0, d.SCREENWIDTH, d.SCREENHEIGHT, color.RGBA{50, 50, 50, 200}, false)
@@ -282,6 +280,7 @@ func (g *Game) drawBottomCorner(screen *ebiten.Image, beginX, beginY float32) {
 func main() {
 	ebiten.SetWindowSize(d.SCREENWIDTH, d.SCREENHEIGHT)
 	ebiten.SetWindowTitle("Monstersweeper")
+	ebiten.SetTPS(15)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
