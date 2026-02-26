@@ -7,17 +7,18 @@ import (
 )
 
 type Player struct {
-	Name          string
-	MaxHealth     int
-	Health        int
-	Strength      int
-	Dexterity     int
-	Intelligence  int
-	PrimaryStat   string
-	Items         map[string]int //Name maps to the amount carried.
-	AnimFrames    map[string][]*ebiten.Image
-	CurrentFrame  int
-	PrevFrameTime time.Time
+	Name           string
+	MaxHealth      int
+	Health         int
+	Strength       int
+	Dexterity      int
+	Intelligence   int
+	PrimaryStat    string
+	Items          map[string]int //Name maps to the amount carried.
+	AnimFrames     map[string][]*ebiten.Image
+	CurrentFrame   int
+	PrevFrameTime  time.Time
+	MonstersKilled int
 }
 
 func (p *Player) HasKey() bool {

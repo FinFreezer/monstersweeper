@@ -45,7 +45,7 @@ func (g *Game) Update() error {
 		g.ActiveBattle = true
 		go func() {
 			fmt.Println(g.field.ActiveEncounter.MonsterId)
-			d.StartBattle(g.player, g.field.ActiveEncounter)
+			d.StartBattle(g.player, g.field.ActiveEncounter, g.field)
 			g.field.ActiveBattle = false
 			g.field.ActiveEncounter = nil
 			g.ActiveBattle = false
@@ -71,6 +71,8 @@ func (g *Game) Update() error {
 		d.FieldSize += 2
 		d.InitTile()
 		g.player.Items["Key"] = 0
+		g.player.MonstersKilled = 0
+		g.player.Health = g.player.MaxHealth
 		f, err := d.InitField()
 		g.field = f
 		if err != nil {
@@ -222,6 +224,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	total, left := g.field.ReturnMineAmt()
 	mineText := fmt.Sprintf("Mines left %d / %d", left, total)
 	text.Draw(screen, mineText, f, op)
+	op.GeoM.Translate(0, 40)
+	if g.player.HasKey() {
+		text.Draw(screen, "Key found.", f, op)
+	} else {
+		text.Draw(screen, "No key found.", f, op)
+	}
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

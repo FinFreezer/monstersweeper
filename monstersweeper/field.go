@@ -285,3 +285,40 @@ func (f *Field) addMonsters() {
 		}
 	}
 }
+
+func (f *Field) locateKey(monstersKilled int) string {
+	if float32(monstersKilled) > (float32(len(f.MineTiles)) * 0.75) {
+		return fmt.Sprintf("The key appears to be at %d, %d\n", f.KeyTile.GridX, f.KeyTile.GridY)
+	}
+
+	if float32(monstersKilled) > (float32(len(f.MineTiles)) * 0.5) {
+		return fmt.Sprintf("The key appears to be at row %d\n", f.KeyTile.GridX)
+	}
+
+	if float32(monstersKilled) > (float32(len(f.MineTiles)) * 0.25) {
+		return fmt.Sprintf("The key appears to be at quadrant %d\n", f.getQuadrant())
+	}
+
+	if float32(monstersKilled) >= 1 {
+		return "Your target wasn't carrying the key, keep looking."
+	}
+
+	return "Something went wrong."
+}
+
+func (f *Field) getQuadrant() int {
+	if f.KeyTile.GridX < float32(FieldSize)/2 && f.KeyTile.GridY < float32(FieldSize)/2 {
+		return 1
+	}
+	if f.KeyTile.GridX >= float32(FieldSize)/2 && f.KeyTile.GridY < float32(FieldSize)/2 {
+		return 2
+	}
+	if f.KeyTile.GridX < float32(FieldSize)/2 && f.KeyTile.GridY >= float32(FieldSize)/2 {
+		return 3
+	}
+	if f.KeyTile.GridX >= float32(FieldSize)/2 && f.KeyTile.GridY >= float32(FieldSize)/2 {
+		return 4
+	}
+	errors.New("Unreachable quadrant.")
+	return 0
+}
