@@ -36,8 +36,8 @@ var (
 	GeneralText         = initFont(32)
 	TILE_SIZE_Y         = float32((GAME_AREA_HEIGHT - ((FieldSize - 1) * TILE_MARGIN)) / FieldSize)
 	TILE_SIZE_X         = TILE_SIZE_Y
-	TopCornerPath       = drawTopCorner()
-	BottomCornerPath    = drawBottomCorner()
+	TopCornerPath       = calcTopCorner()
+	BottomCornerPath    = calcBottomCorner()
 	ShaderSize          = TILE_SIZE_Y * 0.1
 )
 
@@ -138,7 +138,7 @@ func readFileToBytes() []byte {
 	return data
 }
 
-func drawTopCorner() vector.Path {
+func calcTopCorner() vector.Path {
 	var path vector.Path
 	drawOp := &vector.DrawPathOptions{}
 	drawOp.ColorScale.ScaleWithColor(TileClrInitDark)
@@ -150,7 +150,7 @@ func drawTopCorner() vector.Path {
 	return path
 }
 
-func drawBottomCorner() vector.Path {
+func calcBottomCorner() vector.Path {
 	var path vector.Path
 	drawOp := &vector.DrawPathOptions{}
 	drawOp.ColorScale.ScaleWithColor(TileClrInitLight)

@@ -3,9 +3,15 @@ package monstersweeper
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"math"
 	"math/rand"
+	"strconv"
 	"time"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Field struct {
@@ -194,6 +200,10 @@ func (f *Field) handleFirstClickMine(t *Tile) {
 	for _, mine := range f.MineTiles {
 		f.includeMines(mine)
 	}
+	for _, mine := range f.MineTiles {
+		mine.Encounter = nil
+	}
+	f.addMonsters()
 	f.RevealedTiles = append(f.RevealedTiles, t)
 	t.IsRevealed = true
 	return
@@ -321,4 +331,119 @@ func (f *Field) getQuadrant() int {
 	}
 	errors.New("Unreachable quadrant.")
 	return 0
+}
+
+func (f *Field) Draw(screen *ebiten.Image) {
+	if len(f.Tiles) != 0 {
+		for _, t := range f.Tiles {
+			if t.IsRevealed && t.IsMine {
+				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrMineRevealed, false)
+				op := &ebiten.DrawImageOptions{}
+				rect := MineImg.Bounds()
+				width := rect.Dx()
+				heigth := rect.Dy()
+				scaleX := float64((float64(TILE_SIZE_X) / float64(width))) * 0.8
+				scaleY := float64((float64(TILE_SIZE_Y) / float64(heigth))) * 0.8
+				op.GeoM.Scale(scaleX, scaleY)
+				op.GeoM.Translate(float64(t.OriginX+(t.Width/10)), float64(t.OriginY+(t.Height/10)))
+				screen.DrawImage(MineImg, op)
+				continue
+			}
+			if t.IsRevealed {
+				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrRevealed, false)
+
+				if t.AdjacentMines > 0 {
+					mineAmt := strconv.Itoa(t.AdjacentMines)
+					op := &text.DrawOptions{}
+					f := &text.GoTextFace{
+						Source: MineText.Source,
+						Size:   MineText.Size,
+					}
+					x, y := text.Measure(mineAmt, f, 0)
+					op.GeoM.Translate(float64(t.OriginX+((t.Width-float32(x))/2)), float64(t.OriginY+(t.Height-float32(y))))
+					op.ColorScale.ScaleWithColor(color.RGBA{0x00, 0x80, 0x00, 0xff})
+
+					text.Draw(screen, mineAmt, f, op)
+				}
+				continue
+			}
+			if t.IsFlagged {
+				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrInit, false)
+				drawShaders(screen, t)
+				drawCorners(screen, t)
+				op := &ebiten.DrawImageOptions{}
+				rect := FlagImg.Bounds()
+				width := rect.Dx()
+				heigth := rect.Dy()
+				scaleX := float64((float64(TILE_SIZE_X) / float64(width))) * 0.8
+				scaleY := float64((float64(TILE_SIZE_Y) / float64(heigth))) * 0.8
+				op.GeoM.Scale(scaleX, scaleY)
+				op.GeoM.Translate(float64(t.OriginX+(t.Width/10)), float64(t.OriginY+(t.Height/10)))
+				screen.DrawImage(FlagImg, op)
+				continue
+			}
+			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrInit, false)
+			//Add shading
+
+			drawShaders(screen, t)
+			drawCorners(screen, t)
+		}
+	}
+	f.drawMineInfo(screen)
+}
+
+func (f *Field) drawField(screen *ebiten.Image) {
+
+}
+
+// Draws the ratio of flagged/revealed mines to total mines.
+func (f *Field) drawMineInfo(screen *ebiten.Image) {
+	op := &text.DrawOptions{}
+	face := &text.GoTextFace{
+		Source: GeneralText.Source,
+		Size:   GeneralText.Size,
+	}
+	edgeTile := f.Tiles[FieldSize-1]
+	edge := edgeTile.OriginX + edgeTile.Width + EDGE_MARGIN
+	op.GeoM.Translate(float64(edge), float64(EDGE_MARGIN))
+	op.ColorScale.ScaleWithColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
+	total, left := f.ReturnMineAmt()
+	mineText := fmt.Sprintf("Mines left %d / %d", left, total)
+	text.Draw(screen, mineText, face, op)
+}
+
+// Adds lighter and darker areas to give the tiles a sense of depth.
+func drawShaders(screen *ebiten.Image, t *Tile) {
+	vector.FillRect(screen, (t.OriginX + t.Width - ShaderSize), t.OriginY, ShaderSize, t.Height, TileClrInitDark, false)
+	vector.FillRect(screen, t.OriginX, t.OriginY+t.Height-ShaderSize, t.Width-ShaderSize, ShaderSize, TileClrInitDark, false)
+	vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, ShaderSize, TileClrInitLight, false)
+	vector.FillRect(screen, t.OriginX, t.OriginY+ShaderSize, ShaderSize, t.Height-2*ShaderSize, TileClrInitLight, false)
+}
+
+// Fills in the missing corners to make the shaders look nicer.
+func drawCorners(screen *ebiten.Image, t *Tile) {
+	drawTopCorner(screen, t.OriginX, t.OriginY)
+	drawBottomCorner(screen, t.OriginX, t.OriginY)
+}
+
+func drawTopCorner(screen *ebiten.Image, beginX, beginY float32) {
+	var path vector.Path
+	drawOp := &vector.DrawPathOptions{}
+	drawOp.ColorScale.ScaleWithColor(TileClrInitDark)
+	pathOp := &vector.AddPathOptions{}
+	pathOp.GeoM.Translate(float64(beginX+TILE_SIZE_X), float64(beginY))
+	path.AddPath(&TopCornerPath, pathOp)
+	vector.FillPath(screen, &path, nil, drawOp)
+	return
+}
+
+func drawBottomCorner(screen *ebiten.Image, beginX, beginY float32) {
+	var path vector.Path
+	drawOp := &vector.DrawPathOptions{}
+	drawOp.ColorScale.ScaleWithColor(TileClrInitLight)
+	pathOp := &vector.AddPathOptions{}
+	pathOp.GeoM.Translate(float64(beginX), float64(beginY+TILE_SIZE_Y-ShaderSize))
+	path.AddPath(&BottomCornerPath, pathOp)
+	vector.FillPath(screen, &path, nil, drawOp)
+	return
 }

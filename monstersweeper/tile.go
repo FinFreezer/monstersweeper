@@ -5,8 +5,8 @@ func InitTile() { //re-calculate variables after field refreshes.
 	TILE_SIZE_X = TILE_SIZE_Y
 	MineText = initFont(float64(TILE_SIZE_Y) * 0.8)
 	ShaderSize = TILE_SIZE_Y * 0.1
-	TopCornerPath = drawTopCorner()
-	BottomCornerPath = drawBottomCorner()
+	TopCornerPath = calcTopCorner()
+	BottomCornerPath = calcBottomCorner()
 }
 
 type Tile struct {

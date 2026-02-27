@@ -30,7 +30,7 @@ func (p *Player) HasKey() bool {
 	return false
 }
 
-func NewPlayer() *Player {
+func InitPlayer() *Player {
 	p := Player{
 		Name:          "Knight",
 		MaxHealth:     30,
