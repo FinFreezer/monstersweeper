@@ -16,7 +16,7 @@ type Monster struct {
 	Intelligence  int
 	MonsterId     int
 	KeyCarrier    bool
-	Abilities     map[string]int //Name maps to the amount carried.
+	Abilities     map[string]int
 	AnimFrames    map[string][]*ebiten.Image
 	PrevFrameTime time.Time
 	CurrentFrame  int

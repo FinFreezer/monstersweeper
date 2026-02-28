@@ -6,7 +6,6 @@ import (
 	"image/color"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -35,7 +34,7 @@ func (f *Field) ReturnMineAmt() (total, left int) {
 	return len(f.MineTiles), len(f.MineTiles) - revealed - f.Flags
 }
 
-func (f *Field) calcTilePos() {
+func (f *Field) initTiles() {
 	tiles := []*Tile{}
 	var coord_x float32 = 0.0 + EDGE_MARGIN/2
 	var coord_y float32 = 0.0 + EDGE_MARGIN/2
@@ -63,6 +62,7 @@ func (f *Field) calcTilePos() {
 		coord_x = 0.0 + EDGE_MARGIN/2
 	}
 	f.Tiles = tiles
+	return
 }
 
 func InitField() (*Field, error) {
@@ -70,7 +70,7 @@ func InitField() (*Field, error) {
 		Tiles: []*Tile{},
 		Grid:  make(map[int]map[int]*Tile),
 	}
-	f.calcTilePos()
+	f.initTiles()
 	f.addMines()
 	f.addMonsters()
 	if len(f.Tiles) == 0 {
@@ -87,14 +87,18 @@ func (f *Field) addMines() {
 	if FieldSize >= 16 {
 		ratio = 0.20
 	}
+
 	for i := 0; i < int(math.Round(float64(FieldSize)*float64(FieldSize)*ratio)); i++ {
 		randomX := r.Intn(FieldSize) + 1
 		randomY := r.Intn(FieldSize) + 1
 
+		//minesPos is used to track added mines and avoid duplicates.
 		if minesPos[randomX] == nil {
 			minesPos[randomX] = make(map[int]bool)
 		}
 
+		//The loop checks if a mine at given XY coordinate
+		//exists and rolls a new one in case of duplicates.
 		for {
 			if minesPos[randomX][randomY] {
 				randomX = r.Intn(FieldSize) + 1
@@ -114,6 +118,9 @@ func (f *Field) addMines() {
 			}
 		}
 	}
+
+	//Cross references the tile grid with the mines and
+	//sets the equivalent tiles as mines.
 	for _, mine := range mines {
 		mineTile := f.Grid[int(mine.posX)][int(mine.posY)]
 		mineTile.IsMine = true
@@ -132,6 +139,7 @@ func (f *Field) FindClickedTile(coord_x, coord_y int, rightClick bool) (tile *Ti
 					f.tileClicked(tile)
 					return tile
 
+					//On right click, simply 'flag' the tile.
 				} else {
 					if !tile.IsFlagged {
 						tile.IsFlagged = true
@@ -213,7 +221,6 @@ func (f *Field) revealTiles(t *Tile) {
 	if t == nil {
 		return
 	}
-
 	if t.IsRevealed {
 		return
 	}
@@ -274,6 +281,7 @@ func (f *Field) includeMines(t *Tile) {
 			continue
 		}
 	}
+	return
 }
 
 func (f *Field) addMonsters() {
@@ -294,8 +302,10 @@ func (f *Field) addMonsters() {
 			errors.New("No encounter found.")
 		}
 	}
+	return
 }
 
+// Used to guide the player towards the right monster after battles.
 func (f *Field) locateKey(monstersKilled int) string {
 	if float32(monstersKilled) > (float32(len(f.MineTiles)) * 0.75) {
 		return fmt.Sprintf("The key appears to be at %d, %d\n", f.KeyTile.GridX, f.KeyTile.GridY)
@@ -316,6 +326,7 @@ func (f *Field) locateKey(monstersKilled int) string {
 	return "Something went wrong."
 }
 
+// Returns which quadrant of the field the monster holding the key is in.
 func (f *Field) getQuadrant() int {
 	if f.KeyTile.GridX < float32(FieldSize)/2 && f.KeyTile.GridY < float32(FieldSize)/2 {
 		return 1
@@ -337,63 +348,25 @@ func (f *Field) Draw(screen *ebiten.Image) {
 	if len(f.Tiles) != 0 {
 		for _, t := range f.Tiles {
 			if t.IsRevealed && t.IsMine {
-				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrMineRevealed, false)
-				op := &ebiten.DrawImageOptions{}
-				rect := MineImg.Bounds()
-				width := rect.Dx()
-				heigth := rect.Dy()
-				scaleX := float64((float64(TILE_SIZE_X) / float64(width))) * 0.8
-				scaleY := float64((float64(TILE_SIZE_Y) / float64(heigth))) * 0.8
-				op.GeoM.Scale(scaleX, scaleY)
-				op.GeoM.Translate(float64(t.OriginX+(t.Width/10)), float64(t.OriginY+(t.Height/10)))
-				screen.DrawImage(MineImg, op)
+				t.DrawRevealedMine(screen)
 				continue
 			}
 			if t.IsRevealed {
-				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrRevealed, false)
-
-				if t.AdjacentMines > 0 {
-					mineAmt := strconv.Itoa(t.AdjacentMines)
-					op := &text.DrawOptions{}
-					f := &text.GoTextFace{
-						Source: MineText.Source,
-						Size:   MineText.Size,
-					}
-					x, y := text.Measure(mineAmt, f, 0)
-					op.GeoM.Translate(float64(t.OriginX+((t.Width-float32(x))/2)), float64(t.OriginY+(t.Height-float32(y))))
-					op.ColorScale.ScaleWithColor(color.RGBA{0x00, 0x80, 0x00, 0xff})
-
-					text.Draw(screen, mineAmt, f, op)
-				}
+				t.DrawRevealedTile(screen)
 				continue
 			}
 			if t.IsFlagged {
-				vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrInit, false)
-				drawShaders(screen, t)
-				drawCorners(screen, t)
-				op := &ebiten.DrawImageOptions{}
-				rect := FlagImg.Bounds()
-				width := rect.Dx()
-				heigth := rect.Dy()
-				scaleX := float64((float64(TILE_SIZE_X) / float64(width))) * 0.8
-				scaleY := float64((float64(TILE_SIZE_Y) / float64(heigth))) * 0.8
-				op.GeoM.Scale(scaleX, scaleY)
-				op.GeoM.Translate(float64(t.OriginX+(t.Width/10)), float64(t.OriginY+(t.Height/10)))
-				screen.DrawImage(FlagImg, op)
+				t.DrawFlag(screen)
 				continue
 			}
-			vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, t.Height, TileClrInit, false)
+			t.DrawGenericTile(screen)
 			//Add shading
-
 			drawShaders(screen, t)
 			drawCorners(screen, t)
 		}
 	}
 	f.drawMineInfo(screen)
-}
-
-func (f *Field) drawField(screen *ebiten.Image) {
-
+	return
 }
 
 // Draws the ratio of flagged/revealed mines to total mines.
@@ -410,6 +383,7 @@ func (f *Field) drawMineInfo(screen *ebiten.Image) {
 	total, left := f.ReturnMineAmt()
 	mineText := fmt.Sprintf("Mines left %d / %d", left, total)
 	text.Draw(screen, mineText, face, op)
+	return
 }
 
 // Adds lighter and darker areas to give the tiles a sense of depth.
@@ -418,12 +392,14 @@ func drawShaders(screen *ebiten.Image, t *Tile) {
 	vector.FillRect(screen, t.OriginX, t.OriginY+t.Height-ShaderSize, t.Width-ShaderSize, ShaderSize, TileClrInitDark, false)
 	vector.FillRect(screen, t.OriginX, t.OriginY, t.Width, ShaderSize, TileClrInitLight, false)
 	vector.FillRect(screen, t.OriginX, t.OriginY+ShaderSize, ShaderSize, t.Height-2*ShaderSize, TileClrInitLight, false)
+	return
 }
 
 // Fills in the missing corners to make the shaders look nicer.
 func drawCorners(screen *ebiten.Image, t *Tile) {
 	drawTopCorner(screen, t.OriginX, t.OriginY)
 	drawBottomCorner(screen, t.OriginX, t.OriginY)
+	return
 }
 
 func drawTopCorner(screen *ebiten.Image, beginX, beginY float32) {
